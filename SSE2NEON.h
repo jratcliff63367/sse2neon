@@ -26,10 +26,9 @@
 // Brandon Rowlett : browlett@nvidia.com
 // Ken Fast : kfast@gdeb.com
 
-#define GCC 1
 #define ENABLE_CPP_VERSION 0
 
-#if GCC
+#ifdef __GNUC__
 #define FORCE_INLINE					inline __attribute__((always_inline))
 #else
 #define FORCE_INLINE					inline
@@ -358,7 +357,7 @@ FORCE_INLINE __m128 _mm_shuffle_ps_function(__m128 a, __m128 b)
 		case _MM_SHUFFLE(2, 0, 1, 0): return _mm_shuffle_ps_2010(a, b); break;
 		case _MM_SHUFFLE(2, 0, 0, 1): return _mm_shuffle_ps_2001(a, b); break;
 		case _MM_SHUFFLE(2, 0, 3, 2): return _mm_shuffle_ps_2032(a, b); break;
-		default: _mm_shuffle_ps_default<i>(a, b);
+		default: return _mm_shuffle_ps_default<i>(a, b);
 	}
 }
 
@@ -632,6 +631,12 @@ FORCE_INLINE __m128 _mm_sqrt_ps(__m128 in)
 	return sq;
 }
 
+// Computes the approximate reciprocal square root of the four single-precision, floating-point values of a. Uses the step version of rsqrt to improve accuracy.
+FORCE_INLINE __m128 _mm_rsqrt_ps(__m128 in)
+{
+	__m128 rsqe = vrsqrteq_f32(in);
+	return vmulq_f32(vrsqrtsq_f32(in, vmulq_f32(rsqe, rsqe)), rsqe);
+}
 
 // Computes the maximums of the four single-precision, floating-point values of a and b. https://msdn.microsoft.com/en-us/library/vstudio/ff5d607a(v=vs.100).aspx
 FORCE_INLINE __m128 _mm_max_ps(__m128 a, __m128 b)

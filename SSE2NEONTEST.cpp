@@ -37,7 +37,7 @@ static void platformAlignedFree(void* ptr)
 
 static void* platformAlignedAlloc(size_t size)
 {
-	return ::memalign(16, size);
+	return ::aligned_alloc(16, size);
 }
 
 static void platformAlignedFree(void* ptr)
