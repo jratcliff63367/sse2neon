@@ -29,7 +29,7 @@
 // John W. Ratcliff : jratcliffscarab@gmail.com
 // Brandon Rowlett : browlett@nvidia.com
 // Ken Fast : kfast@gdeb.com
-//
+// Heiko Lewin : hlewin@worldiety.de
 //
 /*
 ** The MIT license:
@@ -533,7 +533,7 @@ FORCE_INLINE __m128i _mm_shufflehi_epi16_function(__m128i a)
 #define _mm_slli_epi32(a, imm) (__m128i)vshlq_n_s32(a,imm)
 
 //Shifts the 4 signed or unsigned 32-bit integers in a right by count bits while shifting in zeros.  https://msdn.microsoft.com/en-us/library/w486zcfa(v=vs.100).aspx
-#define _mm_srli_epi32( a, imm ) (__m128i)vshrq_n_u32((uint32x4_t)a, imm)
+#define _mm_srli_epi32( a, imm ) vreinterpretq_s32_u32(vshlq_u32(vreinterpretq_u32_s32(a), vdupq_n_s32(-imm)))
 
 // Shifts the 4 signed 32 - bit integers in a right by count bits while shifting in the sign bit.  https://msdn.microsoft.com/en-us/library/z1939387(v=vs.100).aspx
 #define _mm_srai_epi32( a, imm ) vshrq_n_s32(a, imm)
@@ -933,12 +933,104 @@ FORCE_INLINE void _mm_sfence(void)
 // Stores the data in a to the address p without polluting the caches.  If the cache line containing address p is already in the cache, the cache will be updated.Address p must be 16 - byte aligned.  https://msdn.microsoft.com/en-us/library/ba08y07y%28v=vs.90%29.aspx
 FORCE_INLINE void _mm_stream_si128(__m128i *p, __m128i a)
 {
-	*p = a;
+    vst1q_s32((int32_t*)p, a);
 }
 
 // Cache line containing p is flushed and invalidated from all caches in the coherency domain.
 FORCE_INLINE void _mm_clflush(void const*p) {
 	// no corollary for Neon?
 }
+
+
+FORCE_INLINE void _mm_pause() {
+    __asm("nop"); // TODO no real idea
+}
+
+
+// ******************************************
+// Integer operations
+// ******************************************
+
+FORCE_INLINE __m128i _mm_cmpeq_epi8(__m128i a, __m128i b) {
+    return vreinterpretq_s32_u8( vceqq_u8( vreinterpretq_u8_s32(a), vreinterpretq_u8_s32(b) ) );
+}
+
+FORCE_INLINE __m128i _mm_cmpeq_epi16(__m128i a, __m128i b) {
+    return vreinterpretq_s32_u16(
+                vceqq_s16(
+                    vreinterpretq_s16_s32(a),
+                    vreinterpretq_s16_s32(b)
+                )
+            );
+}
+
+FORCE_INLINE void _mm_storeu_si128 (__m128i *p, __m128i a) {
+    vst1q_s32((int32_t*)p, a);
+}
+
+FORCE_INLINE __m128i _mm_loadu_si128(const __m128i *p) {
+    return vld1q_s32((int32_t*)p);
+}
+
+
+FORCE_INLINE __m128i _mm_set1_epi8(char v) {
+    return vreinterpretq_s32_s8( vdupq_n_s8(v) );
+}
+
+FORCE_INLINE __m128i _mm_set1_epi16(short v) {
+    return vreinterpretq_s32_s16( vdupq_n_s16(v) );
+}
+
+FORCE_INLINE __m128i _mm_set_epi16(short w1, short w2, short w3, short w4, short w5, short w6, short w7, short w8) {
+    short v[8] = { w8, w7, w6, w5, w4, w3, w2, w1 };
+    return vld1q_s32((int32_t*)v);
+}
+
+FORCE_INLINE __m128i _mm_sub_epi16(__m128i a, __m128i b) {
+    return vreinterpretq_s32_s16(
+            vsubq_s16(
+                vreinterpretq_s16_s32(a),
+                vreinterpretq_s16_s32(b)
+            )
+        );
+}
+
+FORCE_INLINE __m128i _mm_sign_epi32(__m128i a, __m128i b) {
+    __m128i zer0 = vdupq_n_s32(0);
+    __m128i ltMask = vreinterpretq_s32_u32(vcltq_s32(b, zer0));
+    __m128i gtMask = vreinterpretq_s32_u32(vcgtq_s32(b, zer0));
+    __m128i neg = vnegq_s32(a);
+    __m128i tmp = vandq_s32(a, gtMask);
+    return vorrq_s32(tmp, vandq_s32(neg, ltMask));
+}
+
+FORCE_INLINE __m128i _mm_sign_epi16(__m128i a, __m128i b) {
+    int16x8_t zer0 = vdupq_n_s16(0);
+    int16x8_t ltMask = vreinterpretq_s16_u16(vcltq_s16(vreinterpretq_s16_s32(b), zer0));
+    int16x8_t gtMask = vreinterpretq_s16_u16(vcgtq_s16(vreinterpretq_s16_s32(b), zer0));
+    int16x8_t neg = vnegq_s16(vreinterpretq_s16_s32(a));
+    int16x8_t tmp = vandq_s16(vreinterpretq_s16_s32(a), gtMask);
+    return vreinterpretq_s32_s16(vorrq_s16(tmp, vandq_s16(neg, ltMask)));
+}
+
+
+
+FORCE_INLINE __m128i _mm_abs_epi32(__m128i a) {
+    return vqabsq_s32(a);
+}
+
+FORCE_INLINE __m128i _mm_abs_epi16(__m128i a) {
+    return vreinterpretq_s32_s16(
+            vqabsq_s16( vreinterpretq_s16_s32(a) )
+            );
+}
+
+FORCE_INLINE __m128i _mm_srli_epi16(__m128i a, int c) {
+    return vreinterpretq_s32_u16(
+            vshlq_u16(vreinterpretq_u16_s32(a), vdupq_n_s16(-c))
+        );
+}
+
+
 
 #endif
