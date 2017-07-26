@@ -142,6 +142,9 @@ static inline float bankersRounding(float val)
         case IT_MM_LOADU_PS:
             ret = "MM_LOADU_PS";
             break;
+        case IT_MM_LOADU_SI128:
+            ret = "MM_LOADU_SI128";
+            break;
         case IT_MM_LOAD_SS:
             ret = "MM_LOAD_SS";
             break;
@@ -210,6 +213,9 @@ static inline float bankersRounding(float val)
             break;
         case IT_MM_ADD_EPI16:
             ret = "MM_ADD_EPI16";
+            break;
+        case IT_MM_MADD_EPI16:
+            ret = "MM_MADD_EPI16";
             break;
         case IT_MM_MULLO_EPI16:
             ret = "MM_MULLO_EPI16";
@@ -547,6 +553,13 @@ static inline float bankersRounding(float val)
         __m128 c = _mm_loadl_pi(a,b);
 
         return validateFloat(c, p1[3], p1[2], p2[1], p2[0]);
+    }
+
+    bool test_mm_loadu_si128(const int32_t *p)
+    {
+        __m128i a = _mm_load_si128((const __m128i*)p);
+
+        return validateInt(a, p[3], p[2], p[1], p[0]);
     }
 
     __m128 test_mm_load_ps(const float *p)
@@ -895,6 +908,30 @@ static inline float bankersRounding(float val)
 
         __m128i c = _mm_mullo_epi16(a, b);
         return validateInt16(c, d0, d1, d2, d3, d4, d5, d6, d7);
+    }
+
+    bool test_mm_madd_epi16(const int16_t *_a, const int16_t *_b)
+    {
+        int32_t d0 = (int32_t)_a[0] * _b[0];
+        int32_t d1 = (int32_t)_a[1] * _b[1];
+        int32_t d2 = (int32_t)_a[2] * _b[2];
+        int32_t d3 = (int32_t)_a[3] * _b[3];
+        int32_t d4 = (int32_t)_a[4] * _b[4];
+        int32_t d5 = (int32_t)_a[5] * _b[5];
+        int32_t d6 = (int32_t)_a[6] * _b[6];
+        int32_t d7 = (int32_t)_a[7] * _b[7];
+
+        int32_t e0 = d0 + d1;
+        int32_t e1 = d2 + d3;
+        int32_t e2 = d4 + d5;
+        int32_t e3 = d6 + d7;
+
+        __m128i a = test_mm_load_ps((const int32_t *)_a);
+        __m128i b = test_mm_load_ps((const int32_t *)_b);
+
+        __m128i c = _mm_madd_epi16(a, b);
+
+        return validateInt(c, e3, e2, e1, e0);
     }
 
     bool test_mm_mul_ps(const float *_a, const float *_b)
@@ -1461,6 +1498,9 @@ public:
             case IT_MM_LOADL_PI:
                 ret = test_mm_loadl_pi(mTestFloatPointer1, mTestFloatPointer2);
                 break;
+            case IT_MM_LOADU_SI128:
+                ret = test_mm_loadu_si128(mTestIntPointer1);
+                break;
             case IT_MM_ANDNOT_PS:
                 ret = test_mm_andnot_ps(mTestFloatPointer1, mTestFloatPointer2);
                 break;
@@ -1627,6 +1667,9 @@ public:
                 break;
             case IT_MM_ADD_EPI16:
                 ret = true;
+                break;
+            case IT_MM_MADD_EPI16:
+                ret = test_mm_madd_epi16((const int16_t *)mTestIntPointer1, (const int16_t *)mTestIntPointer2);
                 break;
             case IT_MM_ADD_SS:
                 ret = true;

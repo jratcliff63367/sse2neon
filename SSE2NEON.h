@@ -1007,6 +1007,26 @@ FORCE_INLINE __m128i _mm_add_epi16(__m128i a, __m128i b)
 	return vreinterpretq_m128i_s16(vaddq_s16(vreinterpretq_s16_m128i(a), vreinterpretq_s16_m128i(b)));
 }
 
+// Multiplies the 8 signed 16-bit integers from a by the 8 signed 16-bit integers from b. https://msdn.microsoft.com/en-us/library/yht36sa6(v=vs.90).aspx
+FORCE_INLINE __m128i _mm_madd_epi16(__m128i a, __m128i b)
+{
+	int32x4_t low  = vmull_s16(vget_low_s16(vreinterpretq_s16_m128i(a)),
+			  	vget_low_s16(vreinterpretq_s16_m128i(b)));
+	int32x4_t high = vmull_s16(vget_high_s16(vreinterpretq_s16_m128i(a)),
+				vget_high_s16(vreinterpretq_s16_m128i(b)));
+
+	int32x2_t low_sum  = vpadd_s32(vget_low_s32(low),vget_high_s32(low));
+	int32x2_t high_sum = vpadd_s32(vget_low_s32(high),vget_high_s32(high));
+
+	return vreinterpretq_s32_m128i(vcombine_s32(low_sum,high_sum));
+}
+
+// Loads 128-bit value. https://msdn.microsoft.com/en-us/library/f4k12ae8(v=vs.100).aspx
+FORCE_INLINE __m128i _mm_loadu_si128 (const __m128i *p)
+{
+	return vld1q_s32((int32_t*)p);
+}
+
 // Multiplies the 8 signed or unsigned 16-bit integers from a by the 8 signed or unsigned 16-bit integers from b. https://msdn.microsoft.com/en-us/library/vstudio/9ks1472s(v=vs.100).aspx
 FORCE_INLINE __m128i _mm_mullo_epi16(__m128i a, __m128i b)
 {

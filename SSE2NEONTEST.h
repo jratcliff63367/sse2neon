@@ -68,6 +68,7 @@ enum InstructionTest
     IT_MM_STOREL_EPI64,                  // Unit test *not yet implemented*
     IT_MM_LOAD_PS,                       // Unit test *not yet implemented*
     IT_MM_LOADU_PS,                      // Unit test *not yet implemented*
+    IT_MM_LOADU_SI128,                   // Unit test implemented and verified as fully working
     IT_MM_LOAD_SS,                       // Unit test *not yet implemented*
     IT_MM_CMPNEQ_PS,                     // Unit test *not yet implemented*
     IT_MM_XOR_PS,                        // Unit test *not yet implemented*
@@ -79,6 +80,7 @@ enum InstructionTest
     IT_MM_SHUFFLEHI_EPI16_FUNCTION,      // Unit test *not yet implemented*
     IT_MM_ADD_SS,                        // Unit test *not yet implemented*
     IT_MM_ADD_EPI16,                     // Unit test *not yet implemented*
+    IT_MM_MADD_EPI16,                    // Unit test implemented and verified as fully working
     IT_MM_MULLO_EPI32,                   // Unit test *not yet implemented*
     IT_MM_DIV_PS,                        // Unit test *not yet implemented*
     IT_MM_DIV_SS,                        // Unit test *not yet implemented*
