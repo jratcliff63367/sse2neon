@@ -143,6 +143,8 @@
 typedef float32x4_t __m128;
 typedef int32x4_t __m128i;
 
+typedef float32x2_t __m64;
+
 
 // ******************************************
 // type-safe casting between types
@@ -429,11 +431,25 @@ FORCE_INLINE void _mm_storel_epi64(__m128i* a, __m128i b)
 	*a = vreinterpretq_m128i_u64(vcombine_u64(lo, hi));
 }
 
+// Stores the lower two single-precision floating point values of a to the address p. https://msdn.microsoft.com/en-us/library/h54t98ks(v=vs.90).aspx
+FORCE_INLINE void _mm_storel_pi(__m64* p, __m128 a)
+{
+	*p = vget_low_f32(a);
+}
+
 // Loads a single single-precision, floating-point value, copying it into all four words https://msdn.microsoft.com/en-us/library/vstudio/5cdkf716(v=vs.100).aspx
 FORCE_INLINE __m128 _mm_load1_ps(const float * p)
 {
 	return vreinterpretq_m128_f32(vld1q_dup_f32(p));
 }
+
+// Sets the lower two single-precision, floating-point values with 64
+// bits of data loaded from the address p; the upper two values are passed
+// through from a. https://msdn.microsoft.com/en-us/library/s57cyak2(v=vs.100).aspx
+FORCE_INLINE __m128 _mm_loadl_pi(__m128 a,__m64 const *b)
+ {
+	return vreinterpretq_m128_f32(vcombine_f32(vld1_f32((const float32_t*)b),vget_high_f32(a)));
+ }
 
 // Loads four single-precision, floating-point values. https://msdn.microsoft.com/en-us/library/vstudio/zzd50xxt(v=vs.100).aspx
 FORCE_INLINE __m128 _mm_load_ps(const float * p)
