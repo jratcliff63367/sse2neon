@@ -12,6 +12,7 @@
 
 #else
 
+#include <malloc.h>
 #include <stdlib.h>
 
 #endif
