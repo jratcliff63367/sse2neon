@@ -898,6 +898,16 @@ static inline float bankersRounding(float val)
         {
             isValid = false;
         }
+        ret = _mm_shuffle_ps(a, b, _MM_SHUFFLE(1, 0, 1, 0));
+        if (!validateFloat(ret, _b[1], _b[0], _a[1], _a[0]))
+        {
+            isValid = false;
+        }
+        ret = _mm_shuffle_ps(a, b, _MM_SHUFFLE(3, 2, 3, 2));
+        if (!validateFloat(ret, _b[3], _b[2], _a[3], _a[2]))
+        {
+            isValid = false;
+        }
 
         return isValid;
     }
