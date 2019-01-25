@@ -15,7 +15,7 @@ int main(int /*argc*/,const char ** /*argv*/)
         // If the test fails, we will run it again so we can step into the debugger and figure out why!
         if (!ok)
         {
-            printf("**FAILURE** SSE2NEONTest %s", SSE2NEON::SSE2NEONTest::getInstructionTestString(it));
+            printf("**FAILURE** SSE2NEONTest %s\n", SSE2NEON::SSE2NEONTest::getInstructionTestString(it));
             //            test->runTest(it); // Uncomment this to step through the code to find the failure case
         }
         if (ok)
