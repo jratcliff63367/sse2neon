@@ -1685,4 +1685,111 @@ FORCE_INLINE void _mm_clflush(void const*p)
 #	pragma pop_macro("FORCE_INLINE")
 #endif
 
+
+FORCE_INLINE __m128i _mm_set_epi64x(int64_t e1, int64_t e0)
+{
+  int64_t __attribute__((aligned(16))) data[2] = {e0,e1};
+  return vreinterpretq_m128i_s64(vld1q_s64(data));
+}
+
+FORCE_INLINE __m128i _mm_set1_epi64x(int64_t a)
+{
+  return vreinterpretq_m128i_s64(vdupq_n_s64(a));
+}
+
+FORCE_INLINE __m128i _mm_shuffle_epi8(__m128i a, __m128i b)
+{
+    uint8x16_t tbl = vreinterpretq_u8_m128i(a);   // input a
+    uint8x16_t idx = vreinterpretq_u8_m128i(b);  // input b
+    uint8_t __attribute__((aligned(16)))
+    mask[16] = {0x8F, 0x8F, 0x8F, 0x8F, 0x8F, 0x8F, 0x8F, 0x8F,
+                0x8F, 0x8F, 0x8F, 0x8F, 0x8F, 0x8F, 0x8F, 0x8F};
+    uint8x16_t idx_masked =
+        vandq_u8(idx, vld1q_u8(mask));  // avoid using meaningless bits
+
+    return vreinterpretq_m128i_u8(vqtbl1q_u8(tbl, idx_masked));
+}
+
+FORCE_INLINE __m128i _mm_alignr_epi8(__m128i a, __m128i b, const int c)
+{
+     return vreinterpretq_m128i_s8(vextq_s8((int8x16_t) b, (int8x16_t) a, c));
+}
+
+FORCE_INLINE int _mm_popcnt_u32(uint32_t a)
+{
+   uint32_t count = 0;
+   uint8x8_t input_val, count8x8_val;
+   uint16x4_t count16x4_val;
+   uint32x2_t count32x2_val;
+
+   input_val = vld1_u8((uint8_t *) &a);
+   count8x8_val = vcnt_u8(input_val);
+   count16x4_val = vpaddl_u8(count8x8_val);
+   count32x2_val = vpaddl_u16(count16x4_val);
+
+   vst1_u32(&count, count32x2_val);
+
+   return count;
+
+}
+
+#define _mm_extract_epi32(a, imm) \
+  ({ (vgetq_lane_s32(vreinterpretq_s32_m128i(a), imm)); })
+
+#define _mm_extract_epi64(a, imm) \
+  ({ (vgetq_lane_s64(vreinterpretq_s64_m128i(a), imm)); })
+
+#define _mm_slli_epi64(a, imm) \
+({ \
+	__m128i ret; \
+	if ((imm) <= 0) {\
+		ret = a; \
+	} \
+	else if ((imm) > 63) { \
+		ret = vreinterpretq_m128i_s64(vdupq_n_s64(0)); \
+	} \
+	else { \
+		ret = vreinterpretq_m128i_s64(vshlq_n_s64(vreinterpretq_s64_m128i(a), (imm))); \
+	} \
+	ret; \
+})
+
+FORCE_INLINE __m128i _mm_sll_epi64(__m128i a, __m128i b)
+{
+    int64_t value = vget_low_s64(vreinterpretq_s64_m128i(b));
+
+    if (value <= 0) {
+        return a;
+    } else if (value > 63) {
+        return vreinterpretq_m128i_s64(vdupq_n_s64(0));
+    } else {
+        return vreinterpretq_m128i_s64(vshlq_n_s64(vreinterpretq_s64_m128i(a), (value)));
+    }
+}
+
+FORCE_INLINE __m128i _mm_cmpeq_epi32 (__m128i a, __m128i b)
+{
+    return vreinterpretq_m128i_u32(vceqq_s32(vreinterpretq_s32_m128i(a), vreinterpretq_s32_m128i(b)));
+}
+
+FORCE_INLINE __m128i _mm_cmpeq_epi64 (__m128i a, __m128i b)
+{
+    return vreinterpretq_m128i_u64(vceqq_s64(vreinterpretq_s64_m128i(a), vreinterpretq_s64_m128i(b)));
+}
+
+#define _mm_srli_epi64(a, imm) \
+({ \
+	__m128i ret; \
+	if ((imm) <= 0) { \
+		ret = a; \
+	} \
+	else if ((imm) > 63) { \
+		ret = vreinterpretq_m128i_s64(vdupq_n_s64(0)); \
+	} \
+	else { \
+		ret = vreinterpretq_m128i_u64(vshrq_n_u64(vreinterpretq_u64_m128i(a), (imm))); \
+	} \
+	ret; \
+})
+        
 #endif
