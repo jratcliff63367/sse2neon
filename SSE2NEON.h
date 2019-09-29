@@ -142,6 +142,7 @@
 
 typedef float32x4_t __m128;
 typedef int32x4_t __m128i;
+typedef float64x2_t __m128d;
 
 
 // ******************************************
@@ -1791,5 +1792,11 @@ FORCE_INLINE __m128i _mm_cmpeq_epi64 (__m128i a, __m128i b)
 	} \
 	ret; \
 })
+
+__m128d  _mm_set_pd (double e1, double e0) {
+     float64_t __attribute__((aligned(16))) data[2] = {e0,e1};
+     return  vld1q_f64(data);
+}
+
         
 #endif
