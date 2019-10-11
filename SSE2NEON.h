@@ -1798,5 +1798,5 @@ __m128d  _mm_set_pd (double e1, double e0) {
      return  vld1q_f64(data);
 }
 
-        
+
 #endif
