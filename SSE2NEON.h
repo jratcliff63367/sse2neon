@@ -1793,10 +1793,82 @@ FORCE_INLINE __m128i _mm_cmpeq_epi64 (__m128i a, __m128i b)
 	ret; \
 })
 
-__m128d  _mm_set_pd (double e1, double e0) {
+FORCE_INLINE __m128d  _mm_set_pd (double e1, double e0) {
      float64_t __attribute__((aligned(16))) data[2] = {e0,e1};
      return  vld1q_f64(data);
 }
 
+typedef union __attribute__((aligned(16))) __oword{
+	__m128i m128i;
+	uint8_t m128i_u8[16];
+} __oword;
+
+
+// For mode = 0x00   PCMPSTR_EQUAL_ANY | PCMPSTR_UBYTE_OPS;
+FORCE_INLINE __m128i _mm_cmpestrm (__m128i str1, int len1, __m128i str2, int len2, const int mode) {
+	__oword a, b;
+	a.m128i = str1;
+	b.m128i = str2;
+	
+	uint16_t result = 0;
+	uint16_t i = 0;
+	uint16_t j = 0;
+	
+	for (i = 0; i < len2; i++) {
+		for ( j = 0; j < len1; j++) {
+			if (a.m128i_u8[j] == b.m128i_u8[i]) {
+				result |= (1 << i);
+			}
+		}
+	}		
+	return result;
+}
+
+// For mode = 0x10  PCMPSTR_EQUAL_EACH | PCMPSTR_UBYTE_OPS | PCMPSTR_NEG_POLARITY
+FORCE_INLINE int _mm_cmpestri(__m128i str1, int len1, __m128i str2, int len2, const int mode) {
+    
+    __oword a, b;
+    a.m128i = str1;
+    b.m128i = str2;
+  
+    int len_s, len_l;
+	if (len1 > len2) {		
+		len_s = len2;
+		len_l = len1;
+    } else {
+		len_s = len1;
+		len_l = len2;
+    }
+	
+    int result;
+    int i;
+    
+    for(i = 0; i < len_s; i++) {
+		if (a.m128i_u8[i] == b.m128i_u8[i]) {
+			break;
+		}
+    }
+    
+    result = i;
+    if (result == len_s) result = len_l;
+		
+    return result;     		
+}
+
+FORCE_INLINE uint64_t _mm_popcnt_u64(uint64_t x) {
+    uint64_t count = 0;
+    uint8x8_t input_val, count8x8_val;
+    uint16x4_t count16x4_val;
+    uint32x2_t count32x2_val;
+    uint64x1_t count64x1_val;
+
+    input_val = vld1_u8((unsigned char *) &x);
+    count8x8_val = vcnt_u8(input_val);
+    count16x4_val = vpaddl_u8(count8x8_val);
+    count32x2_val = vpaddl_u16(count16x4_val);
+    count64x1_val = vpaddl_u32(count32x2_val);
+    vst1_u64(count, count64x1_val);
+    return count;
+}
 
 #endif
