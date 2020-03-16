@@ -22,7 +22,7 @@ Rewriting code written for SSE to work on Neon is very time consuming.  This is 
 #include "SSE2NEON.h"
 ```
 
-- On Linux compile your code with the following gcc/g++ flag:   
+- On Linux ARM platform (exclude AArch64) compile your code with the following gcc/g++ flag:   
  ```
  -mfpu=neon 
  ```

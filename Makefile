@@ -5,7 +5,12 @@
 #The C compiler to use 
 CC = g++
 #C flags
+uname_p := $(shell uname -p)
+ifeq ($(uname_p),aarch64)
+CFLAGS = -Wall
+else
 CFLAGS = -Wall -mfpu=neon
+endif
 #Preprocessor flags like include paths
 CPPFLAGS+=	-I. 
 #Add libraries to this, e.g. -lm for the math library
@@ -25,4 +30,4 @@ $(BINARY) : $(SRCS) $(DEPS)
 
 .PHONY: clean    
 clean :
-	-rm $(BINARY) *.o  *.out 2> /dev/null
+	-rm -f $(BINARY) *.o  *.out 2> /dev/null
