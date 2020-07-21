@@ -1,5 +1,19 @@
 # sse2neon
 
+**IMPORTANT NOTE**
+
+This project is now deprecated!
+
+Other software engineers have been making continued improvements
+on this project in another GitHub repot.
+
+This is *NO LONGER* considered the official depot for SSE2NEON!!
+
+You should please be redirected to:
+
+https://github.com/DLTcollab/sse2neon
+
+
 A C/C++ header file that converts Intel SSE intrinsics to ARN NEON intrinsics.
 
 ## Info
